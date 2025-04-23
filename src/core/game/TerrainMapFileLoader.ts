@@ -5,12 +5,14 @@ interface MapData {
   mapBin: string;
   miniMapBin: string;
   nationMap: NationMap;
+  cosmeticMapImageUrl?: string;
 }
 
 interface MapCache {
   bin?: string;
   miniMapBin?: string;
   nationMap?: NationMap;
+  cosmeticMapImageUrl?: string;
 }
 
 interface BinModule {
@@ -42,6 +44,7 @@ const MAP_FILE_NAMES: Record<GameMapType, string> = {
   [GameMapType.BetweenTwoSeas]: "BetweenTwoSeas",
   [GameMapType.KnownWorld]: "KnownWorld",
   [GameMapType.FaroeIslands]: "FaroeIslands",
+  [GameMapType.India]: "India",
 };
 
 class GameMapLoader {
@@ -55,7 +58,12 @@ class GameMapLoader {
 
   public async getMapData(map: GameMapType): Promise<MapData> {
     const cachedMap = this.maps.get(map);
-    if (cachedMap?.bin && cachedMap?.nationMap) {
+    if (
+      cachedMap?.bin &&
+      cachedMap?.nationMap &&
+      cachedMap?.miniMapBin &&
+      cachedMap?.cosmeticMapImageUrl !== undefined
+    ) {
       return cachedMap as MapData;
     }
 
@@ -74,6 +82,24 @@ class GameMapLoader {
       throw new Error(`No file name mapping found for map: ${map}`);
     }
 
+    const cosmeticMapImageUrl = `/maps/${fileName}_T.png`;
+
+    let cosmeticExists = false;
+    try {
+      const response = await fetch(cosmeticMapImageUrl, { method: "HEAD" });
+      cosmeticExists = response.ok;
+      if (!cosmeticExists) {
+        console.warn(
+          `Cosmetic map ${cosmeticMapImageUrl} not found (status: ${response.status}).`,
+        );
+      }
+    } catch (e) {
+      console.warn(
+        `Cosmetic map ${cosmeticMapImageUrl} might not exist or fetch failed.`,
+        e,
+      );
+    }
+
     const [binModule, miniBinModule, infoModule] = await Promise.all([
       import(
         `!!binary-loader!../../../resources/maps/${fileName}.bin`
@@ -90,12 +116,17 @@ class GameMapLoader {
       mapBin: binModule.default,
       miniMapBin: miniBinModule.default,
       nationMap: infoModule.default,
+      cosmeticMapImageUrl: cosmeticExists ? cosmeticMapImageUrl : null, // ADDED: Store the URL or null
     };
   }
 
   public isMapLoaded(map: GameMapType): boolean {
     const mapData = this.maps.get(map);
-    return !!mapData?.bin && !!mapData?.nationMap;
+    return (
+      !!mapData?.bin &&
+      !!mapData?.nationMap &&
+      mapData?.cosmeticMapImageUrl !== undefined
+    );
   }
 
   public getLoadedMaps(): GameMapType[] {

@@ -8,6 +8,7 @@ import europe from "../../../resources/maps/EuropeThumb.webp";
 import faroeislands from "../../../resources/maps/FaroeIslandsThumb.webp";
 import gatewayToTheAtlantic from "../../../resources/maps/GatewayToTheAtlanticThumb.webp";
 import iceland from "../../../resources/maps/IcelandThumb.webp";
+import india from "../../../resources/maps/IndiaThumb.webp";
 import japan from "../../../resources/maps/JapanThumb.webp";
 import knownworld from "../../../resources/maps/KnownWorldThumb.webp";
 import mars from "../../../resources/maps/MarsThumb.webp";
@@ -60,6 +61,8 @@ export function getMapsImage(map: GameMapType): string {
       return knownworld;
     case GameMapType.FaroeIslands:
       return faroeislands;
+    case GameMapType.India:
+      return india;
     default:
       return "";
   }

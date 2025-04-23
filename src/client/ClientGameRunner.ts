@@ -21,7 +21,7 @@ import {
   WinUpdate,
 } from "../core/game/GameUpdates";
 import { GameView, PlayerView } from "../core/game/GameView";
-import { loadTerrainMap, TerrainMapData } from "../core/game/TerrainMapLoader";
+import { loadTerrainMap, TerrainMapData } from "../core/game/TerrainMapLoader"; // MODIFIED import
 import { UserSettings } from "../core/game/UserSettings";
 import { WorkerClient } from "../core/worker/WorkerClient";
 import { InputHandler, MouseMoveEvent, MouseUpEvent } from "./InputHandler";
@@ -71,12 +71,12 @@ export function joinLobby(
     consolex.log(`Joined game lobby ${lobbyConfig.gameID}`);
     transport.joinGame(0);
   };
-  let terrainLoad: Promise<TerrainMapData> | null = null;
+  let terrainLoad: Promise<TerrainMapData> | null = null; // MODIFIED type
 
   const onmessage = (message: ServerMessage) => {
     if (message.type == "prestart") {
       consolex.log(`lobby: game prestarting: ${JSON.stringify(message)}`);
-      terrainLoad = loadTerrainMap(message.gameMap);
+      terrainLoad = loadTerrainMap(message.gameMap); // MODIFIED: Trigger load
       onPrestart();
     }
     if (message.type == "start") {
@@ -91,7 +91,7 @@ export function joinLobby(
         eventBus,
         transport,
         userSettings,
-        terrainLoad,
+        terrainLoad, // MODIFIED: Pass promise
       ).then((r) => r.start());
     }
   };
@@ -107,18 +107,18 @@ export async function createClientGame(
   eventBus: EventBus,
   transport: Transport,
   userSettings: UserSettings,
-  terrainLoad: Promise<TerrainMapData> | null,
+  terrainLoad: Promise<TerrainMapData> | null, // MODIFIED type
 ): Promise<ClientGameRunner> {
   const config = await getConfig(
     lobbyConfig.gameStartInfo.config,
     userSettings,
   );
-  let gameMap: TerrainMapData | null = null;
+  let mapData: TerrainMapData | null = null; // MODIFIED variable name
 
   if (terrainLoad) {
-    gameMap = await terrainLoad;
+    mapData = await terrainLoad; // MODIFIED await
   } else {
-    gameMap = await loadTerrainMap(lobbyConfig.gameStartInfo.config.gameMap);
+    mapData = await loadTerrainMap(lobbyConfig.gameStartInfo.config.gameMap); // MODIFIED await
   }
   const worker = new WorkerClient(
     lobbyConfig.gameStartInfo,
@@ -128,9 +128,10 @@ export async function createClientGame(
   const gameView = new GameView(
     worker,
     config,
-    gameMap.gameMap,
+    mapData.gameMap, // MODIFIED: Use mapData
     lobbyConfig.clientID,
     lobbyConfig.gameStartInfo.gameID,
+    mapData.cosmeticMapImageUrl, // ADDED: Pass cosmetic image URL
   );
 
   consolex.log("going to init path finder");

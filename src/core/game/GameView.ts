@@ -283,12 +283,16 @@ export class GameView implements GameMap {
 
   private toDelete = new Set<number>();
 
+  private cosmeticMapImage: HTMLImageElement | null = null;
+  private isCosmeticMapLoaded = false;
+
   constructor(
     public worker: WorkerClient,
     private _config: Config,
     private _map: GameMap,
     private _myClientID: ClientID,
     private _gameID: GameID,
+    private cosmeticMapImageUrl?: string,
   ) {
     this.lastUpdate = {
       tick: 0,
@@ -298,7 +302,37 @@ export class GameView implements GameMap {
       playerNameViewData: {},
     };
     this.unitGrid = new UnitGrid(_map);
+
+    if (cosmeticMapImageUrl) {
+      this.loadCosmeticImage(cosmeticMapImageUrl);
+    } else {
+      this.isCosmeticMapLoaded = true;
+    }
   }
+
+  private loadCosmeticImage(url: string): void {
+    this.cosmeticMapImage = new Image();
+    this.cosmeticMapImage.crossOrigin = "anonymous";
+    this.cosmeticMapImage.onload = () => {
+      this.isCosmeticMapLoaded = true;
+      console.log("Cosmetic map image loaded successfully:", url);
+    };
+    this.cosmeticMapImage.onerror = (err) => {
+      console.error("Failed to load cosmetic map image:", url, err);
+      this.cosmeticMapImage = null;
+      this.isCosmeticMapLoaded = true;
+    };
+    this.cosmeticMapImage.src = url;
+  }
+
+  public getCosmeticMapImage(): HTMLImageElement | null {
+    return this.cosmeticMapImage;
+  }
+
+  public getIsCosmeticMapLoaded(): boolean {
+    return this.isCosmeticMapLoaded;
+  }
+
   isOnEdgeOfMap(ref: TileRef): boolean {
     return this._map.isOnEdgeOfMap(ref);
   }

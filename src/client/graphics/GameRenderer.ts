@@ -3,11 +3,12 @@ import { EventBus } from "../../core/EventBus";
 import { ClientID } from "../../core/Schemas";
 import { GameView } from "../../core/game/GameView";
 import { GameStartingModal } from "../GameStartingModal";
-import { RefreshGraphicsEvent as RedrawGraphicsEvent } from "../InputHandler";
+import { RefreshGraphicsEvent } from "../InputHandler"; // MODIFIED: Renamed event for clarity
 import { TransformHandler } from "./TransformHandler";
 import { UIState } from "./UIState";
 import { BuildMenu } from "./layers/BuildMenu";
 import { ControlPanel } from "./layers/ControlPanel";
+import { CosmeticMapLayer } from "./layers/CosmeticMapLayer"; // ADDED: Import the new layer
 import { EmojiTable } from "./layers/EmojiTable";
 import { EventsDisplay } from "./layers/EventsDisplay";
 import { Layer } from "./layers/Layer";
@@ -136,6 +137,7 @@ export function createRenderer(
 
   const layers: Layer[] = [
     new TerrainLayer(game, transformHandler),
+    new CosmeticMapLayer(game, transformHandler),
     new TerritoryLayer(game, eventBus),
     new StructureLayer(game, eventBus),
     new UnitLayer(game, eventBus, clientID, transformHandler),
@@ -177,6 +179,7 @@ export function createRenderer(
 
 export class GameRenderer {
   private context: CanvasRenderingContext2D;
+  private checkLoadInterval: number | null = null; // ADDED: Interval ID
 
   constructor(
     private game: GameView,
@@ -187,10 +190,34 @@ export class GameRenderer {
     private layers: Layer[],
   ) {
     this.context = canvas.getContext("2d");
+    // ADDED: Force redraw when cosmetic map loads
+    if (!this.game.getIsCosmeticMapLoaded()) {
+      this.checkLoadInterval = window.setInterval(() => {
+        // MODIFIED: Use window.setInterval
+        if (this.game.getIsCosmeticMapLoaded()) {
+          console.log("Cosmetic map loaded, redrawing layers...");
+          this.layers.forEach((l) => l.redraw?.()); // Trigger redraw on all layers that might need it
+          if (this.checkLoadInterval !== null) {
+            clearInterval(this.checkLoadInterval);
+            this.checkLoadInterval = null;
+          }
+        }
+      }, 100);
+    }
+  }
+
+  // ADDED: Cleanup interval on destroy/disconnect
+  destroy() {
+    if (this.checkLoadInterval !== null) {
+      clearInterval(this.checkLoadInterval);
+      this.checkLoadInterval = null;
+    }
+    // Add any other cleanup needed for the renderer
   }
 
   initialize() {
-    this.eventBus.on(RedrawGraphicsEvent, (e) => {
+    this.eventBus.on(RefreshGraphicsEvent, (e) => {
+      // MODIFIED: Correct event name if needed
       this.layers.forEach((l) => {
         if (l.redraw) {
           l.redraw();

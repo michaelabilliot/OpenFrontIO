@@ -1,0 +1,42 @@
+{
+  "name": "India",
+  "width": 2000,
+  "height": 2000,
+  "nations": [
+    {
+      "coordinates": [1019, 510],
+      "name": "India",
+      "strength": 1
+    },
+    {
+      "coordinates": [662, 911],
+      "name": "1",
+      "strength": 1
+    },
+    {
+      "coordinates": [1237, 999],
+      "name": "2",
+      "strength": 1
+    },
+    {
+      "coordinates": [931, 1339],
+      "name": "3",
+      "strength": 1
+    },
+    {
+      "coordinates": [440, 345],
+      "name": "4",
+      "strength": 1
+    },
+    {
+      "coordinates": [1667, 476],
+      "name": "5",
+      "strength": 1
+    },
+    {
+      "coordinates": [1099, 1783],
+      "name": "6",
+      "strength": 1
+    }
+  ]
+}

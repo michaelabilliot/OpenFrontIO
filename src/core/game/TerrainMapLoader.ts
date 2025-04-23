@@ -7,6 +7,7 @@ export type TerrainMapData = {
   nationMap: NationMap;
   gameMap: GameMap;
   miniGameMap: GameMap;
+  cosmeticMapImageUrl?: string;
 };
 
 const loadedMaps = new Map<GameMapType, TerrainMapData>();
@@ -36,6 +37,7 @@ export async function loadTerrainMap(
     nationMap: mapFiles.nationMap,
     gameMap: gameMap,
     miniGameMap: miniGameMap,
+    cosmeticMapImageUrl: mapFiles.cosmeticMapImageUrl,
   };
   loadedMaps.set(map, result);
   return result;
